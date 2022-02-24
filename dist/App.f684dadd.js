@@ -20520,11 +20520,9 @@ const cellStatus = {
   obstacle: 1,
   searchable: 2
 };
-const directions = {
-  north: true,
-  east: true,
-  south: true,
-  west: true
+const playerType = {
+  human: 0,
+  zombie: 1
 };
 
 function BoardSetup() {
@@ -20592,15 +20590,179 @@ function BoardSetup() {
     south: true,
     west: true
   }]];
-  let barricades = [];
-  board = cellStatus.obstacle;
+  let barricades = [[5, 11, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [6, 11, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }], [5, 15, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [6, 15, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }], [8, 5, {
+    north: false,
+    east: true,
+    south: false,
+    west: false
+  }], [8, 6, {
+    north: false,
+    east: false,
+    south: false,
+    west: true
+  }], [12, 7, {
+    north: false,
+    east: true,
+    south: false,
+    west: false
+  }], [12, 8, {
+    north: false,
+    east: false,
+    south: false,
+    west: true
+  }], [9, 13, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [10, 13, {
+    north: true,
+    east: false,
+    south: false,
+    west: true
+  }], [10, 12, {
+    north: false,
+    east: true,
+    south: false,
+    west: false
+  }], [16, 10, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [16, 11, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [16, 13, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [16, 16, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [16, 17, {
+    north: false,
+    east: false,
+    south: true,
+    west: false
+  }], [17, 10, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }], [17, 11, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }], [17, 13, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }], [17, 16, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }], [17, 17, {
+    north: true,
+    east: false,
+    south: false,
+    west: false
+  }]];
+  obstacles.forEach(el => board[el[0]][el[1]] = cellStatus.obstacle);
+  searchables.forEach(el => board[el[0]][el[1]] = cellStatus.searchable);
   return board;
 }
 
+function setupPlayer(playerNum) {
+  let players = {
+    humans: [],
+    zombies: [],
+    allPlayers: []
+  };
+
+  for (let index = 0; index < playerNum; index++) {
+    players.humans.push({
+      name: "Human #".concat(index),
+      player: index,
+      playerType: playerType.human,
+      live: true,
+      turnsAvailable: 4
+    });
+  }
+
+  players.humans.forEach(el => {
+    for (let z = 0; z < 4; z++) players.zombies.push({
+      name: "Zombie #".concat(el.player).concat(z),
+      player: playerNum++,
+      playerType: playerType.zombie,
+      live: true,
+      turnsAvailable: 2
+    });
+  });
+  players.allPlayers = players.humans.concat(players.zombies);
+  return players;
+}
+
+function IsVictory(cells) {
+  return true;
+}
+
+function IsDraw(cells) {
+  return true;
+}
+
 const ZombiePlague = {
-  setup: () => ({
-    cells: BoardSetup()
+  setup: ctx => ({
+    cells: BoardSetup(),
+    players: setupPlayer(ctx.numPlayers)
   }),
+  minPlayers: 1,
+  maxPlayers: 8,
+  turn: {
+    minMoves: 1,
+    maxMoves: 4
+  },
+  endIf: (G, ctx) => {
+    if (IsVictory(G.cells)) {
+      return {
+        winner: ctx.currentPlayer
+      };
+    }
+
+    if (IsDraw(G.cells)) {
+      return {
+        draw: true
+      };
+    }
+  },
   moves: {
     clickCell: (G, ctx, id) => {
       if (G.cells[id] !== null) {
@@ -20622,7 +20784,8 @@ var _Game = require("./Game");
 class ZombiePlagueClient {
   constructor() {
     this.client = (0, _client.Client)({
-      game: _Game.ZombiePlague
+      game: _Game.ZombiePlague,
+      numPlayers: 4
     });
     this.client.start();
   }
@@ -20658,7 +20821,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40549" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "1027" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
