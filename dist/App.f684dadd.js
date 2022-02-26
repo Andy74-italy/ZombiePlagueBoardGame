@@ -20505,16 +20505,7 @@ const PlayerView = {
   }
 };
 exports.PlayerView = PlayerView;
-},{"./turn-order-0b7dce3d.js":"node_modules/boardgame.io/dist/esm/turn-order-0b7dce3d.js","immer":"node_modules/immer/dist/immer.esm.js","./plugin-random-087f861e.js":"node_modules/boardgame.io/dist/esm/plugin-random-087f861e.js","lodash.isplainobject":"node_modules/lodash.isplainobject/index.js"}],"src/Game.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ZombiePlague = void 0;
-
-var _core = require("boardgame.io/core");
-
+},{"./turn-order-0b7dce3d.js":"node_modules/boardgame.io/dist/esm/turn-order-0b7dce3d.js","immer":"node_modules/immer/dist/immer.esm.js","./plugin-random-087f861e.js":"node_modules/boardgame.io/dist/esm/plugin-random-087f861e.js","lodash.isplainobject":"node_modules/lodash.isplainobject/index.js"}],"src/GameDefinitions.js":[function(require,module,exports) {
 const cellStatus = {
   empty: 0,
   obstacle: 1,
@@ -20524,9 +20515,32 @@ const playerType = {
   human: 0,
   zombie: 1
 };
+const directions = {
+  north: 0,
+  east: 1,
+  south: 2,
+  west: 3,
+  length: 4
+};
+/*
+north: "north",
+east: "east",
+south: "south",
+west: "west"
+ */
+
+module.exports = {
+  cellStatus,
+  playerType,
+  directions
+};
+},{}],"src/GameSetup.js":[function(require,module,exports) {
+"use strict";
+
+var _GameDefinitions = require("./GameDefinitions");
 
 function BoardSetup() {
-  let board = Array(24).fill(Array(20).fill(cellStatus.empty));
+  let board = Array(24).fill(Array(20).fill(_GameDefinitions.cellStatus.empty));
   let obstacles = [[1, 6], [3, 1], [3, 8], [4, 1], [4, 3], [4, 4], [4, 5], [5, 1], [5, 5], [6, 1], [6, 4], [6, 5], [6, 8], [6, 9], [7, 1], [7, 5], [7, 8], [7, 9], [0, 12], [0, 18], [0, 19], [1, 19], [5, 13], [5, 14], [6, 12], [6, 13], [6, 14], [6, 16], [6, 17], [6, 18], [7, 12], [7, 13], [7, 18], [8, 1], [8, 2], [8, 8], [8, 9], [9, 1], [9, 5], [10, 8], [10, 9], [11, 8], [13, 8], [14, 8], [15, 2], [15, 3], [15, 4], [15, 8], [8, 12], [9, 14], [9, 15], [9, 16], [9, 17], [9, 18], [10, 18], [11, 10], [11, 15], [11, 16], [11, 18], [12, 14], [12, 15], [12, 16], [12, 17], [12, 18], [13, 11], [13, 12], [13, 14], [13, 18], [14, 11], [14, 14], [14, 18], [15, 18], [16, 2], [16, 3], [16, 4], [16, 8], [17, 2], [17, 3], [17, 4], [17, 8], [17, 9], [18, 2], [18, 3], [18, 4], [18, 9], [19, 2], [19, 4], [19, 9], [21, 6], [16, 14], [16, 15], [19, 10], [20, 19], [21, 10], [21, 13], [21, 15], [21, 19]];
   let searchables = [[4, 2], [8, 18], [10, 10], [11, 14], [19, 3], [16, 18]];
   let walls = [[5, 10, {
@@ -20696,12 +20710,12 @@ function BoardSetup() {
     south: false,
     west: false
   }]];
-  obstacles.forEach(el => board[el[0]][el[1]] = cellStatus.obstacle);
-  searchables.forEach(el => board[el[0]][el[1]] = cellStatus.searchable);
+  obstacles.forEach(el => board[el[0]][el[1]] = _GameDefinitions.cellStatus.obstacle);
+  searchables.forEach(el => board[el[0]][el[1]] = _GameDefinitions.cellStatus.searchable);
   return board;
 }
 
-function setupPlayer(playerNum) {
+function SetupPlayer(playerNum) {
   let players = {
     humans: [],
     zombies: [],
@@ -20709,46 +20723,191 @@ function setupPlayer(playerNum) {
   };
 
   for (let index = 0; index < playerNum; index++) {
-    players.humans.push({
+    let player = {
       name: "Human #".concat(index),
       player: index,
-      playerType: playerType.human,
+      playerType: _GameDefinitions.playerType.human,
       live: true,
-      turnsAvailable: 4
-    });
+      turnsAvailable: 4,
+      turnPlayed: 0,
+      currentPosition: {
+        x: 20,
+        y: 0 + index,
+        direction: _GameDefinitions.directions.north
+      }
+    };
+    players.humans.push(player);
   }
 
+  let position = 0;
   players.humans.forEach(el => {
-    for (let z = 0; z < 4; z++) players.zombies.push({
-      name: "Zombie #".concat(el.player).concat(z),
-      player: playerNum++,
-      playerType: playerType.zombie,
-      live: true,
-      turnsAvailable: 2
-    });
+    for (let z = 0; z < 4; z++) {
+      let zombie = {
+        name: "Zombie #".concat(el.player).concat(z),
+        player: playerNum++,
+        playerType: _GameDefinitions.playerType.zombie,
+        live: true,
+        turnsAvailable: 2,
+        turnPlayed: 0,
+        currentPosition: {
+          x: 0,
+          y: 0 + position++,
+          direction: _GameDefinitions.directions.south
+        }
+      };
+      players.zombies.push(zombie);
+    }
   });
   players.allPlayers = players.humans.concat(players.zombies);
   return players;
 }
 
-function IsVictory(cells) {
+module.exports = {
+  BoardSetup,
+  SetupPlayer
+};
+},{"./GameDefinitions":"src/GameDefinitions.js"}],"src/GameMoves.js":[function(require,module,exports) {
+"use strict";
+
+var _GameDefinitions = require("./GameDefinitions");
+
+const rowmov = [-1, 0, 1, 0];
+const colmov = [0, 1, 0, -1];
+
+function CheckMovements(move) {
   return true;
 }
 
+function MoveForward(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+  let move = {
+    currentPos: currentPlayer.currentPosition,
+    destination: {}
+  };
+  move.destination.row = move.currentPos.row + rowmov[move.currentPos.direction];
+  move.destination.rcol = move.currentPos.col + colmov[move.currentPos.direction];
+  move.destination.direction = move.currentPos.direction;
+
+  if (CheckMovements(move)) {
+    currentPlayer.currentPosition = move.destination;
+    currentPlayer.turnPlayed++;
+  }
+}
+
+function MoveBackward(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+  let move = {
+    currentPos: currentPlayer.currentPosition,
+    destination: {}
+  };
+  move.destination.row = move.currentPos.row - rowmov[move.currentPos.direction];
+  move.destination.rcol = move.currentPos.col - colmov[move.currentPos.direction];
+  move.destination.direction = move.currentPos.direction;
+
+  if (currentPlayer.playerType !== _GameDefinitions.playerType.zombie && CheckMovements(move)) {
+    currentPlayer.currentPosition = move.destination;
+    currentPlayer.turnPlayed++;
+  }
+}
+
+function TurnOnTheLeft(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+  currentPlayer.currentPosition.direction = (directions.length + (currentPlayer.currentPosition.direction - 1)) % direction.length;
+  currentPlayer.turnPlayed++;
+}
+
+function TurnOnTheRight(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+  currentPlayer.currentPosition.direction = (currentPlayer.currentPosition.direction + 1) % direction.length;
+  currentPlayer.turnPlayed++;
+}
+
+function Barricade(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+
+  if (currentPlayer.playerType !== _GameDefinitions.playerType.human) {
+    currentPlayer.turnPlayed++;
+  }
+}
+
+function DestroyBarricade(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+
+  if (currentPlayer.playerType !== _GameDefinitions.playerType.zombie && false) {
+    currentPlayer.turnPlayed++;
+  }
+}
+
+function Attack(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+  currentPlayer.turnPlayed++;
+}
+
+function Search(G, ctx) {
+  let currentPlayer = ctx.currentPlayer;
+
+  if (currentPlayer.playerType !== _GameDefinitions.playerType.human) {
+    currentPlayer.turnPlayed++;
+  }
+}
+
+module.exports = {
+  Search,
+  Attack,
+  Barricade,
+  TurnOnTheLeft,
+  TurnOnTheRight,
+  MoveBackward,
+  MoveForward,
+  DestroyBarricade
+};
+},{"./GameDefinitions":"src/GameDefinitions.js"}],"src/Game.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ZombiePlague = void 0;
+
+var _core = require("boardgame.io/core");
+
+var _GameSetup = require("./GameSetup");
+
+var _GameMoves = require("./GameMoves");
+
+// import defaultExport from './GameDefinitions'
+function IsVictory(cells) {
+  return false;
+}
+
 function IsDraw(cells) {
-  return true;
+  return false;
 }
 
 const ZombiePlague = {
   setup: ctx => ({
-    cells: BoardSetup(),
-    players: setupPlayer(ctx.numPlayers)
+    cells: (0, _GameSetup.BoardSetup)(),
+    players: (0, _GameSetup.SetupPlayer)(ctx.numPlayers)
   }),
   minPlayers: 1,
   maxPlayers: 8,
   turn: {
     minMoves: 1,
-    maxMoves: 4
+    maxMoves: 4,
+    endIf: (G, ctx) => {
+      let plyr = ctx.players[parseInt(ctx.currentPlayer)];
+      return plyr.turnPlayed === plyr.turnAvailable;
+    }
+  },
+  moves: {
+    Search: _GameMoves.Search,
+    Attack: _GameMoves.Attack,
+    Barricade: _GameMoves.Barricade,
+    TurnOnTheLeft: _GameMoves.TurnOnTheLeft,
+    TurnOnTheRight: _GameMoves.TurnOnTheRight,
+    MoveBackward: _GameMoves.MoveBackward,
+    MoveForward: _GameMoves.MoveForward,
+    DestroyBarricade: _GameMoves.DestroyBarricade
   },
   endIf: (G, ctx) => {
     if (IsVictory(G.cells)) {
@@ -20774,7 +20933,7 @@ const ZombiePlague = {
   }
 };
 exports.ZombiePlague = ZombiePlague;
-},{"boardgame.io/core":"node_modules/boardgame.io/dist/esm/core.js"}],"src/App.js":[function(require,module,exports) {
+},{"boardgame.io/core":"node_modules/boardgame.io/dist/esm/core.js","./GameSetup":"src/GameSetup.js","./GameMoves":"src/GameMoves.js"}],"src/App.js":[function(require,module,exports) {
 "use strict";
 
 var _client = require("boardgame.io/client");
@@ -20785,7 +20944,7 @@ class ZombiePlagueClient {
   constructor() {
     this.client = (0, _client.Client)({
       game: _Game.ZombiePlague,
-      numPlayers: 4
+      numPlayers: 1
     });
     this.client.start();
   }
@@ -20821,7 +20980,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41231" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45407" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

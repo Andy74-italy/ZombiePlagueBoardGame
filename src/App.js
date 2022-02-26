@@ -3,7 +3,7 @@ import { ZombiePlague } from './Game';
 
 class ZombiePlagueClient {
   constructor() {
-    this.client = Client({ game: ZombiePlague, numPlayers: 4 });
+    this.client = Client({ game: ZombiePlague, numPlayers: 1 });
     this.client.start();
   }
 }
