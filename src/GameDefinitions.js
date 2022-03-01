@@ -1,7 +1,7 @@
 const cellStatus = {
-    empty: 0,
-    obstacle: 1,
-    searchable: 2
+    empty: "+",
+    obstacle: "-",
+    searchable: "x"
 };
 
 const playerType = {

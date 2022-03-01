@@ -1,4 +1,3 @@
-import { INVALID_MOVE } from 'boardgame.io/core';
 import { BoardSetup, SetupPlayer } from './GameSetup';
 import { Search, Attack, Barricade, TurnOnTheLeft, TurnOnTheRight, MoveBackward, MoveForward, DestroyBarricade } from './GameMoves'
 // import defaultExport from './GameDefinitions'
@@ -29,8 +28,6 @@ export const ZombiePlague = {
       },
     },
 
-    moves: { Search, Attack, Barricade, TurnOnTheLeft, TurnOnTheRight, MoveBackward, MoveForward, DestroyBarricade },
-
     endIf: (G, ctx) => {
       if (IsVictory(G.cells)) {
         return { winner: ctx.currentPlayer };
@@ -41,11 +38,19 @@ export const ZombiePlague = {
     },
   
     moves: {
-      clickCell: (G, ctx, id) => {
-        if (G.cells[id] !== null) {
-          return INVALID_MOVE;
-        }
-        G.cells[id] = ctx.currentPlayer;
-      },
-    },
+      _MoveForward: MoveForward, 
+      _MoveBackward: MoveBackward, 
+      _TurnOnTheLeft: TurnOnTheLeft, 
+      _TurnOnTheRight: TurnOnTheRight, 
+      _Search: Search, 
+      _Attack: Attack, 
+      _Barricade: Barricade, 
+      _DestroyBarricade: DestroyBarricade
+      // clickCell: (G, ctx, id) => {
+      //   if (G.cells[id] !== null) {
+      //     return INVALID_MOVE;
+      //   }
+      //   G.cells[id] = ctx.currentPlayer;
+      // },
+    }
   };
