@@ -73,7 +73,7 @@ function BoardSetup(){
           turnsAvailable: 4, 
           turnPlayed: 0,
           currentPosition: { 
-              x: 20, 
+              x: 23, 
               y: 0 + index, 
               direction: directions.north 
           },
