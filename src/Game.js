@@ -17,7 +17,7 @@ export const ZombiePlague = {
                     }),
 
     minPlayers: 1,
-    maxPlayers: 8,
+    maxPlayers: 6,
 
     turn: {
       minMoves: 1,

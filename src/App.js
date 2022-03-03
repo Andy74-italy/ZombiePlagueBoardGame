@@ -4,7 +4,7 @@ import { ZombiePlague } from './Game';
 
 class ZombiePlagueClient {
   constructor() {
-    this.client = Client({ game: ZombiePlague, numPlayers: 2 });
+    this.client = Client({ game: ZombiePlague, numPlayers: 4 });
     this.client.start();
     this.rootElement = document.getElementById("app");
     this.createBoard();
