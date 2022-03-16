@@ -23,7 +23,7 @@ export const ZombiePlague = {
       minMoves: 1,
       maxMoves: 4,
       endIf: (G, ctx) => {
-        let plyr = ctx.players[parseInt(ctx.currentPlayer)];
+        let plyr = G.players.humans[ctx.currentPlayer];
         return plyr.turnPlayed === plyr.turnAvailable;
       },
     },

@@ -21,7 +21,7 @@ class ZombiePlagueClient {
         const id = 3 * i + j;
         let marker = "", searchBoxClass = "";
         let pos;
-        if (pos = players.find(el => el.currentPosition.x == i && el.currentPosition.y == j))
+        if (pos = players.find(el => el.currentPosition.row == i && el.currentPosition.col == j))
           marker = `<div class="box arrow-${pos.currentPosition.direction}${pos.name[0]} box${pos.name[0]}">${((pos.playerType == playerType.human) ? "H" : "Z") + pos.player.toString()}</div>`;
         if (boardgame[i][j].startsWith(cellStatus.searchable))
           searchBoxClass = "searchBox";

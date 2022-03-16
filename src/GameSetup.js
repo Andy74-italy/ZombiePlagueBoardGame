@@ -85,8 +85,8 @@ function SetupPlayer(playerNum){
         turnsAvailable: 4, 
         turnPlayed: 0,
         currentPosition: { 
-            x: 23, 
-            y: Math.round(20 / (playerNum + 1)) + (index * Math.round((20 - playerNum + 1) / playerNum)) - 1, 
+            row: 23, 
+            col: Math.round(20 / (playerNum + 1)) + (index * Math.round((20 - playerNum + 1) / playerNum)) - 1, 
             direction: directions.north 
         },
         inventory: []
@@ -111,8 +111,8 @@ function SetupPlayer(playerNum){
               turnsAvailable: 2, 
               turnPlayed: 0,
               currentPosition: { 
-                  x: 0 + positionR, 
-                  y: 0 + positionC++, 
+                  row: 0 + positionR, 
+                  col: 0 + positionC++, 
                   direction: directions.south 
               } 
           };

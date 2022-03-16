@@ -27,7 +27,6 @@ function PlayerSearch(){
 }
 
 function MoveForward(G, ctx){
-    debugger;
     let currentPlayer = G.players.humans[ctx.currentPlayer];
     let move = { currentPos: currentPlayer.currentPosition, destination: {} };
     move.destination.row = move.currentPos.row + rowmov[move.currentPos.direction];
@@ -40,8 +39,8 @@ function MoveForward(G, ctx){
         restore = G.cells[move.destination.row][move.destination.col].split(';');
         G.cells[move.destination.row][move.destination.col] = 
             "".concat(currentPlayer.name, ";", restore[1], ";", restore[2]);
-        currentPlayer.currentPosition = move.destination;
-        currentPlayer.turnPlayed++;
+        G.players.humans[ctx.currentPlayer].currentPosition = move.destination;
+        G.players.humans[ctx.currentPlayer].turnPlayed++;
         return;
     }
     return INVALID_MOVE;
