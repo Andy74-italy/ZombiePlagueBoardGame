@@ -8,6 +8,7 @@ class ZombiePlagueClient {
     this.client.start();
     this.rootElement = document.getElementById("app");
     this.createBoard();
+    this.attachListeners();
   }
 
   createBoard() {
@@ -24,153 +25,50 @@ class ZombiePlagueClient {
           marker = `<div class="box arrow-${pos.currentPosition.direction}${pos.name[0]} box${pos.name[0]}">${((pos.playerType == playerType.human) ? "H" : "Z") + pos.player.toString()}</div>`;
         if (boardgame[i][j].startsWith(cellStatus.searchable))
           searchBoxClass = "searchBox";
-        cells.push(`<td class="cell ${searchBoxClass}" data-id="${id}">${marker}</td>`);
+        cells.push(`<td class="cell ${searchBoxClass}" data-id="${i}-${j}">${marker}</td>`);
       }
       rows.push(`<tr>${cells.join('')}</tr>`);
     }
 
     this.rootElement.innerHTML = `
-    <style>
-      .cell {
-        border: 1px solid #555;
-        width: 41px;
-        height: 41px;
-        line-height: 50px;
-        text-align: center;
-      }
-
-      .box {
-        border-radius: 15%;
-        width: 35px;
-        height: 35px;
-        color: #fff;
-        position: relative;
-        line-height: 35px;
-      }
-      .boxH {
-        border: 3px solid #00f;
-        background: #09f;
-      }
-      .boxZ {
-        border: 3px solid #f00;
-        background: #f60;
-      }      
-      
-      .box.arrow-0Z:after {
-        content: " ";
-        position: absolute;
-        right: 3px;
-        top: -10px;
-        border-top: none;
-        border-right: 15px solid transparent;
-        border-left: 15px solid transparent;
-        border-bottom: 10px solid #f60;
-      }
-      .box.arrow-0H:after {
-        content: " ";
-        position: absolute;
-        right: 3px;
-        top: -10px;
-        border-top: none;
-        border-right: 15px solid transparent;
-        border-left: 15px solid transparent;
-        border-bottom: 10px solid #09f;
-      }
-      .box.arrow-1Z:after {
-        content: " ";
-        position: absolute;
-        right: -15px;
-        top: 3px;
-        border-top: 15px solid transparent;
-        border-right: none;
-        border-left: 15px solid #f60;
-        border-bottom: 15px solid transparent;
-      }
-      .box.arrow-1H:after {
-        content: " ";
-        position: absolute;
-        right: -15px;
-        top: 3px;
-        border-top: 15px solid transparent;
-        border-right: none;
-        border-left: 15px solid #09f;
-        border-bottom: 15px solid transparent;
-      }
-      .box.arrow-2Z:after {
-        content: " ";
-        position: absolute;
-        right: 3px;
-        bottom: -10px;
-        border-top: 10px solid #f60;
-        border-right: 15px solid transparent;
-        border-left: 15px solid transparent;
-        border-bottom: none;
-      }
-      .box.arrow-2H:after {
-        content: " ";
-        position: absolute;
-        right: 3px;
-        bottom: -10px;
-        border-top: 10px solid #09f;
-        border-right: 15px solid transparent;
-        border-left: 15px solid transparent;
-        border-bottom: none;
-      }
-      .box.arrow-3Z:after {
-        content: " ";
-        position: absolute;
-        left: -15px;
-        top: 3px;
-        border-top: 15px solid transparent;
-        border-right: 15px solid #f60;
-        border-left: none;
-        border-bottom: 15px solid transparent;
-      }
-      .box.arrow-3H:after {
-        content: " ";
-        position: absolute;
-        left: -15px;
-        top: 3px;
-        border-top: 15px solid transparent;
-        border-right: 15px solid #09f;
-        border-left: none;
-        border-bottom: 15px solid transparent;
-      }
-
-      @-webkit-keyframes blinkZ {  
-        0% { background-color: #f90; }
-        50% { background-color: #f90; }
-        51% { background-color: #f60; }
-        100% { background-color: #f60; }
-      }
-      @-webkit-keyframes blinkH {  
-        0% { background-color: #06f; }
-        50% { background-color: #06f; }
-        51% { background-color: #09f; }
-        100% { background-color: #09f; }
-      }
-      .blinkdivZ {
-        background-color: black;
-        -webkit-animation-name: blinkZ;  
-        -webkit-animation-iteration-count: infinite;  
-        -webkit-animation-duration: 1s; 
-      }
-      .blinkdivH {
-        background-color: black;
-        -webkit-animation-name: blinkH;
-        -webkit-animation-iteration-count: infinite;  
-        -webkit-animation-duration: 1s; 
-      }
-
-      .searchBox {
-        background-color: #FFFF00;
-        border-radius: 5px;
-        opacity: 0.5;
-      }
-    </style>
       <table style="border-spacing: 0px">${rows.join('')}</table>
       <p class="winner"></p>
+      <div id="control-panel" style="text-align: center; border-color: red; border-width: 2px; width: 200px; position: fixed; top: 10px; left: 920px; border-style: solid;">
+        <br/>
+        <div class="controller" id="_MoveForward">forward</div><br/>
+        <div class="controller" id="_MoveBackward">backward</div><br/>
+        <div class="controller" id="_TurnOnTheLeft">turn left</div><br/>
+        <div class="controller" id="_TurnOnTheRight">turn right</div><br/>
+        <div class="controller" id="_Search">search</div><br/>
+        <div class="controller" id="_Attack">attack</div><br/>
+        <div class="controller" id="_Barricade">barricade</div><br/>
+        <div class="controller" id="_DestroyBarricade">destroy the barricade</div><br/>
+        <br/>
+      </div>
     `;
+  }
+
+  attachListeners() {
+    const handleCellClick = event => {
+      console.dir(this.client.moves);
+      // const id = parseInt(event.target.dataset.id);
+      // this.client.moves.clickCell(id);
+      // console.log("event:");
+      // console.dir(event);
+      // console.log("event.target:");
+      // console.dir(event.target);
+      // console.log("event.target.dataset:");
+      // console.dir(event.target.dataset);
+      // console.log("client.moves:");
+      // console.dir(this.client.moves);
+      // console.log(`--- event.target.dataset.id: ${event.target.dataset.id}`);
+      this.client.moves[event.target.id]();
+    };
+    
+    const cells = this.rootElement.querySelectorAll('.controller');
+    cells.forEach(cell => {
+      cell.onclick = handleCellClick;
+    });
   }
 }
 

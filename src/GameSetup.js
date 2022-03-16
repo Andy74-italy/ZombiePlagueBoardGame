@@ -55,70 +55,74 @@ function arrayEquals(a, b) {
 }
 
 function BoardSetup(){
-    let board =  Array(24).fill(null).map(() => Array(20).fill(cellStatus.empty + ";[];[]"));
+  let board =  Array(24).fill(null).map(() => Array(20).fill(cellStatus.empty + ";[];[]"));
 
-    obstacles.forEach(el => board[el[0]][el[1]] = cellStatus.obstacle + ";[];[]");
-    searchables.forEach(el => board[el[0]][el[1]] = cellStatus.searchable + ";[];[]");
+  obstacles.forEach(el => board[el[0]][el[1]] = cellStatus.obstacle + ";[];[]");
+  searchables.forEach(el => board[el[0]][el[1]] = cellStatus.searchable + ";[];[]");
 
-    walls.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace(";[];", ";[" + el[2] + "];"));
-    barricades.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace("];[]", "];[" + el[2] + "0]"));
-  
-    return board;
-  }
-  
-  function SetupPlayer(playerNum){
-    let players = {
-      humans: [],
-      zombies: [],
-      allPlayers: []
+  walls.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace(";[];", ";[" + el[2] + "];"));
+  barricades.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace("];[]", "];[" + el[2] + "0]"));
+
+  return board;
+}
+
+function RedrawBoard(){
+
+}
+
+function SetupPlayer(playerNum){
+  let players = {
+    humans: [],
+    zombies: [],
+    allPlayers: []
+  };
+  for (let index = 0; index < playerNum; index++) {
+    let player = { 
+        name: `Human #${index}`, 
+        player: index, 
+        playerType: playerType.human, 
+        live: true, 
+        turnsAvailable: 4, 
+        turnPlayed: 0,
+        currentPosition: { 
+            x: 23, 
+            y: Math.round(20 / (playerNum + 1)) + (index * Math.round((20 - playerNum + 1) / playerNum)) - 1, 
+            direction: directions.north 
+        },
+        inventory: []
     };
-    for (let index = 0; index < playerNum; index++) {
-      let player = { 
-          name: `Human #${index}`, 
-          player: index, 
-          playerType: playerType.human, 
-          live: true, 
-          turnsAvailable: 4, 
-          turnPlayed: 0,
-          currentPosition: { 
-              x: 23, 
-              y: 0 + index, 
-              direction: directions.north 
-          },
-          inventory: []
-      };
-      players.humans.push(player);
-    }
-    let positionC = 0, positionR = 0;
-    players.humans.forEach(el => { 
-        for(let z = 0; z < 4; z++) {
-            while (obstacles.find(dt => arrayEquals(dt, [positionR, positionC])) 
-              || searchables.find(dt => arrayEquals(dt, [positionR, positionC])))
-            {
-              positionC++;
-              positionR += Math.floor(positionC / 19);
-              positionC %= 19;
-            }
-            let zombie = { 
-                name: `Zombie #${el.player}${z}`, 
-                player: playerNum++, 
-                playerType: playerType.zombie, 
-                live: true, 
-                turnsAvailable: 2, 
-                turnPlayed: 0,
-                currentPosition: { 
-                    x: 0 + positionR, 
-                    y: 0 + positionC++, 
-                    direction: directions.south 
-                } 
-            };
-            players.zombies.push(zombie); 
-        }
-    });
-  
-    players.allPlayers = players.humans.concat(players.zombies);
-    
-    return players;
+    players.humans.push(player);
   }
+  let positionC = 0, positionR = 0;
+  players.humans.forEach(el => { 
+      for(let z = 0; z < 4; z++) {
+          while (obstacles.find(dt => arrayEquals(dt, [positionR, positionC])) 
+            || searchables.find(dt => arrayEquals(dt, [positionR, positionC])))
+          {
+            positionC++;
+            positionR += Math.floor(positionC / 19);
+            positionC %= 19;
+          }
+          let zombie = { 
+              name: `Zombie #${el.player}${z}`, 
+              player: playerNum++, 
+              playerType: playerType.zombie, 
+              live: true, 
+              turnsAvailable: 2, 
+              turnPlayed: 0,
+              currentPosition: { 
+                  x: 0 + positionR, 
+                  y: 0 + positionC++, 
+                  direction: directions.south 
+              } 
+          };
+          players.zombies.push(zombie); 
+      }
+  });
+
+  players.allPlayers = players.humans.concat(players.zombies);
   
-  module.exports = { BoardSetup, SetupPlayer };
+  return players;
+}
+
+module.exports = { BoardSetup, SetupPlayer };

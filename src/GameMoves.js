@@ -27,8 +27,8 @@ function PlayerSearch(){
 }
 
 function MoveForward(G, ctx){
-    console.log("preso");
-    let currentPlayer = ctx.currentPlayer;
+    debugger;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
     let move = { currentPos: currentPlayer.currentPosition, destination: {} };
     move.destination.row = move.currentPos.row + rowmov[move.currentPos.direction];
     move.destination.col = move.currentPos.col + colmov[move.currentPos.direction];
