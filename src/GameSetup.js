@@ -73,8 +73,7 @@ function RedrawBoard(){
 function SetupPlayer(playerNum){
   let players = {
     humans: [],
-    zombies: [],
-    allPlayers: []
+    zombies: []
   };
   for (let index = 0; index < playerNum; index++) {
     let player = { 
@@ -120,8 +119,6 @@ function SetupPlayer(playerNum){
       }
   });
 
-  players.allPlayers = players.humans.concat(players.zombies);
-  
   return players;
 }
 

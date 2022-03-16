@@ -2,6 +2,10 @@ import { cellStatus, playerType } from "./GameDefinitions"
 import { Client } from 'boardgame.io/client';
 import { ZombiePlague } from './Game';
 
+function HelperAllPlayer(players){
+  return players.humans.concat(players.zombies);
+}
+
 class ZombiePlagueClient {
   constructor() {
     this.client = Client({ game: ZombiePlague, numPlayers: 4 });
@@ -9,11 +13,26 @@ class ZombiePlagueClient {
     this.rootElement = document.getElementById("app");
     this.createBoard();
     this.attachListeners();
+    this.client.subscribe(state => this.update(state));
+  }
+
+  update(state) {
+    const players = HelperAllPlayer(state.G.players);
+    players.forEach(ply => {
+      let htmlElem = this.rootElement.querySelector(`#${ply.name.replace(" ", "\\ ").replace("#", "\\#")}`);
+      htmlElem.classList.remove(`arrow-0${ply.name[0]}`);
+      htmlElem.classList.remove(`arrow-1${ply.name[0]}`); 
+      htmlElem.classList.remove(`arrow-2${ply.name[0]}`); 
+      htmlElem.classList.remove(`arrow-3${ply.name[0]}`);
+      htmlElem.classList.add(`arrow-${ply.currentPosition.direction}${ply.name[0]}`);
+      let newParent = this.rootElement.querySelector(`.cell[data-id="${ply.currentPosition.row}-${ply.currentPosition.col}"]`);
+      newParent.appendChild(htmlElem);
+    });
   }
 
   createBoard() {
     let boardgame = this.client.initialState.G.cells;
-    let players = this.client.initialState.G.players.allPlayers;
+    let players = HelperAllPlayer(this.client.initialState.G.players);
     const rows = [];
     for (let i = 0; i < boardgame.length; i++) {
       const cells = [];
@@ -22,7 +41,7 @@ class ZombiePlagueClient {
         let marker = "", searchBoxClass = "";
         let pos;
         if (pos = players.find(el => el.currentPosition.row == i && el.currentPosition.col == j))
-          marker = `<div class="box arrow-${pos.currentPosition.direction}${pos.name[0]} box${pos.name[0]}">${((pos.playerType == playerType.human) ? "H" : "Z") + pos.player.toString()}</div>`;
+          marker = `<div id="${pos.name}" class="box arrow-${pos.currentPosition.direction}${pos.name[0]} box${pos.name[0]}">${((pos.playerType == playerType.human) ? "H" : "Z") + pos.player.toString()}</div>`;
         if (boardgame[i][j].startsWith(cellStatus.searchable))
           searchBoxClass = "searchBox";
         cells.push(`<td class="cell ${searchBoxClass}" data-id="${i}-${j}">${marker}</td>`);
@@ -50,18 +69,6 @@ class ZombiePlagueClient {
 
   attachListeners() {
     const handleCellClick = event => {
-      console.dir(this.client.moves);
-      // const id = parseInt(event.target.dataset.id);
-      // this.client.moves.clickCell(id);
-      // console.log("event:");
-      // console.dir(event);
-      // console.log("event.target:");
-      // console.dir(event.target);
-      // console.log("event.target.dataset:");
-      // console.dir(event.target.dataset);
-      // console.log("client.moves:");
-      // console.dir(this.client.moves);
-      // console.log(`--- event.target.dataset.id: ${event.target.dataset.id}`);
       this.client.moves[event.target.id]();
     };
     

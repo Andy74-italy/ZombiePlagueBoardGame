@@ -47,7 +47,7 @@ function MoveForward(G, ctx){
 }
 
 function MoveBackward(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
     if (currentPlayer.playerType == playerType.zombie)
         return INVALID_MOVE;
     let move = { currentPos: currentPlayer.currentPosition, destination: {} };
@@ -55,54 +55,58 @@ function MoveBackward(G, ctx){
     move.destination.col = move.currentPos.col - colmov[move.currentPos.direction];
     move.destination.direction = move.currentPos.direction;
     if (currentPlayer.playerType !== playerType.zombie && CheckMovements(G.cells, move)){
-        currentPlayer.currentPosition = move.destination;
-        currentPlayer.turnPlayed++;
+        G.players.humans[ctx.currentPlayer].currentPosition = move.destination;
+        G.players.humans[ctx.currentPlayer].turnPlayed++;
+        return;
     }
     return INVALID_MOVE;
 }
 
 function TurnOnTheLeft(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
-    currentPlayer.currentPosition.direction = (directions.length + (currentPlayer.currentPosition.direction - 1)) % direction.length;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
+    currentPlayer.currentPosition.direction = (directions.length + (currentPlayer.currentPosition.direction - 1)) % directions.length;
     currentPlayer.turnPlayed++;
 }
 
 function TurnOnTheRight(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
-    currentPlayer.currentPosition.direction = (currentPlayer.currentPosition.direction + 1) % direction.length;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
+    currentPlayer.currentPosition.direction = (currentPlayer.currentPosition.direction + 1) % directions.length;
     currentPlayer.turnPlayed++;
 }
 
 function Barricade(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
     if (currentPlayer.playerType !== playerType.human && CheckMovements(G.cells, move)){
         // modify the state of the barricade
         currentPlayer.turnPlayed++;
+        return;
     }
     return INVALID_MOVE;
 }
 
 function DestroyBarricade(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
     // check 4 zombie in front of the barricade
     if (currentPlayer.playerType !== playerType.zombie && false){
         // modify the state of the barricade
         currentPlayer.turnPlayed++;
+        return;
     }
     return INVALID_MOVE;
 }
 
 function Attack(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
     PlayerAttack(currentPlayer);
     currentPlayer.turnPlayed++;
 }
 
 function Search(G, ctx){
-    let currentPlayer = ctx.currentPlayer;
+    let currentPlayer = G.players.humans[ctx.currentPlayer];
     if (currentPlayer.playerType !== playerType.human){
         PlayerSearch(currentPlayer);
         currentPlayer.turnPlayed++;
+        return;
     }
     return INVALID_MOVE;
 }
