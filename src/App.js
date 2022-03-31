@@ -64,12 +64,17 @@ class ZombiePlagueClient {
         <div class="controller" id="_DestroyBarricade">destroy the barricade</div><br/>
         <br/>
       </div>
+      <div id="search_cards_place" style="border-color: green; border-width: 2px; width: 200px; height: 300px; position: fixed; top: 380px; left: 920px; border-style: solid;">
+        <br/>
+        <div id="Object" style="text-align: center;"></div><br />
+        <div id="Description" style="padding: 5px"></div>
+      </div>
     `;
   }
 
   attachListeners() {
     const handleCellClick = event => {
-      this.client.moves[event.target.id]();
+      this.client.moves[event.target.id](this.rootElement);
     };
     
     const cells = this.rootElement.querySelectorAll('.controller');

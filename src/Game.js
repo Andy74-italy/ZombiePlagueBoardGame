@@ -1,9 +1,16 @@
-import { BoardSetup, SetupPlayer } from './GameSetup';
+import { BoardSetup, SetupPlayer, indoors, searchables } from './GameSetup';
 import { Search, Attack, Barricade, TurnOnTheLeft, TurnOnTheRight, MoveBackward, MoveForward, DestroyBarricade } from './GameMoves'
 // import defaultExport from './GameDefinitions'
 import './GameMoves'
 
-function IsVictory(cells) {
+function IsHumansVictory(zombies) {
+  return indoors.every(el => zombies.findIndex(z => z.currentPosition.row == el[0] && z.currentPosition.col == el[1]) == -1 )  // no zombies indoor
+          // all entrances barricaded
+          && searchables.every(el => el[2] != 0) // all searchables sifted
+          && false;
+}
+
+function IsZombiesVictory(humans) {
   return false;
 }
 
@@ -29,7 +36,7 @@ export const ZombiePlague = {
     },
 
     endIf: (G, ctx) => {
-      if (IsVictory(G.cells)) {
+      if (IsHumansVictory(G.players.zombies) || IsZombiesVictory(G.players.humans)) {
         return { winner: ctx.currentPlayer };
       }
       if (IsDraw(G.cells)) {

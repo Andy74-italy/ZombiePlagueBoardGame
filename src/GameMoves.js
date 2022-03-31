@@ -1,5 +1,6 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { cellStatus, playerType, directions } from "./GameDefinitions"
+import { searchables, search_cards } from './GameSetup';
 
 const rowmov = [ -1, 0, 1, 0 ];
 const colmov = [ 0, 1, 0, -1 ];
@@ -23,7 +24,21 @@ function PlayerAttack(player){
     }
 }
 
-function PlayerSearch(){
+function CheckSearch(player, cells){
+    let currentPos = Object.assign({}, player.currentPosition);
+    currentPos.row += rowmov[currentPos.direction];
+    currentPos.col += colmov[currentPos.direction];
+    if (cells[currentPos.row][currentPos.col].startsWith(cellStatus.searchable))
+    {
+        let src = searchables.find(el => el[0] == currentPos.row && el[1] == currentPos.col);
+        const plp = (2 ** player.player);
+        if ((src[2] & plp) != plp) {
+            src[2] |= plp;
+            return true;
+        }
+        return false;
+    }
+    return false;
 }
 
 function MoveForward(G, ctx){
@@ -101,10 +116,13 @@ function Attack(G, ctx){
     currentPlayer.turnPlayed++;
 }
 
-function Search(G, ctx){
+function Search(G, ctx, dom){
     let currentPlayer = G.players.humans[ctx.currentPlayer];
-    if (currentPlayer.playerType !== playerType.human){
-        PlayerSearch(currentPlayer);
+    if (currentPlayer.playerType === playerType.human && CheckSearch(currentPlayer, G.cells)){
+        // turn a card
+        let sc = search_cards[Math.floor(Math.random() * search_cards.length)];
+        dom.ownerDocument.getElementById("Object").innerText = sc.object;
+        dom.ownerDocument.getElementById("Description").innerText = sc.description;
         currentPlayer.turnPlayed++;
         return;
     }
