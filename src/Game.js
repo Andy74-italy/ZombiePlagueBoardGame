@@ -1,19 +1,32 @@
 import { BoardSetup, SetupPlayer, indoors, searchables } from './GameSetup';
 import { Search, Attack, Barricade, TurnOnTheLeft, TurnOnTheRight, MoveBackward, MoveForward, DestroyBarricade } from './GameMoves'
-// import defaultExport from './GameDefinitions'
 import './GameMoves'
 
+/************************************************************************
+ * The human victory is attributed if:
+ * 1. there are no zombies into the house and the garage
+ * 2. all the entrance are barricades
+ * 3. and all the searchable place are sifted
+ *************************************************************/
 function IsHumansVictory(zombies) {
-  return indoors.every(el => zombies.findIndex(z => z.currentPosition.row == el[0] && z.currentPosition.col == el[1]) == -1 )  // no zombies indoor
-          // all entrances barricaded
-          && searchables.every(el => el[2] != 0) // all searchables sifted
+         // no zombies indoor: search for zombie with position in one of the indoor cells
+  return indoors.every(el => zombies.findIndex(z => z.currentPosition.row == el[0] && z.currentPosition.col == el[1]) == -1 ) 
+          /// TODO: all entrances barricaded
+          ///       all searchables sifted: the third element of the array for the searchables cells is 0 if noone have search on it
+          && searchables.every(el => el[2] != 0) 
           && false;
 }
 
+/**************************************
+ * Zombies win if all humans are dead
+ **************************************/
 function IsZombiesVictory(humans) {
-  return false;
+  return humans.every(el => !el.live);
 }
 
+/******************************************************
+ * There's no possibility that the game finish in draw
+ ******************************************************/
 function IsDraw(cells) {
   return false;
 }
@@ -29,9 +42,11 @@ export const ZombiePlague = {
     turn: {
       minMoves: 1,
       maxMoves: 4,
-      endIf: (G, ctx) => {
+      endIf: (G, ctx) => { debugger;
+        // is not launched when a player finish his turns 
+        // ??????????????????????????
         let plyr = G.players.humans[ctx.currentPlayer];
-        return plyr.turnPlayed === plyr.turnAvailable;
+        return plyr.turnPlayed === plyr.turnAvailable || !plyr.live || ctx.currentPlayer >= ctx.numPlayers - 1;
       },
     },
 

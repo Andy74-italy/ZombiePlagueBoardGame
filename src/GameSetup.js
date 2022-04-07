@@ -1,5 +1,30 @@
 import { cellStatus, playerType, directions } from "./GameDefinitions"
 
+// this code is for load cards dinamically
+// const search_cards = [];
+// function pad(num, size) {
+//   var s = "00" + num;
+//   return s.substring(s.length-size);
+// }
+// function LoadCards(count) {
+//   try {
+//     import(`${location.protocol + '//' + location.host}/search_cards/sc_${pad(count, 3)}.js`)
+//     .then((module) => { debugger;
+//       search_cards.push(module.default);
+//       module.default.execute();
+//       LoadCards(count + 1);
+//     });
+//   } catch (error) {
+//   }
+// }
+// LoadCards(0);
+
+/*****************************************************************
+ * This is the list of the available cards.
+ * TODO: In this list is missed the behaviour of the card. Have
+ *       to evaluate the system to apply a sort of modificators
+ *       for the player turns.
+ ****************************************************************/
 const search_cards = [{ object: "Kitchen Knife", description: "kills zombies with a 6 (Headshot)." },
                       { object: "Baseball Bat", description: "kills zombies with a 5 or 6 (Body Shot or Headshot)." },
                       { object: "Hockey Stick", description: "kills zombies with a 5 or 6 (Body Shot or Headshot)." },
@@ -20,7 +45,31 @@ const search_cards = [{ object: "Kitchen Knife", description: "kills zombies wit
                       { object: "Eureka !!", description: "the human player draws two more cards." }
                     ];
 
-const obstacles = [[1, 6], [3, 1], [3, 8], [4, 1], [4, 3], [4, 4], [4, 5], [5, 1], [5, 5]
+/*****************************************************************
+ * This arrays contain:
+ *  1. The coordinates of the board where obstacles are located
+ *     (used to generate the map).
+ *  2. The coordinates of the board that identify indoors places
+ *     (used to identify if the human player win).
+ *  3. The coordinates of the board that identify searchable 
+ *     places; the third value identify the humans that have
+ *     already search in that position. The value start with 0 
+ *     (noone player have search in that position). When a 
+ *     player search the place, a bitwise operation with his
+ *     player number is made (described in the "CheckSearch"
+ *     function of the "GameMoves.js" file).
+ *  4. The coordinates of the board with a wall and the direction 
+ *     where the wall is located inside the cell. Considering 
+ *     that the wall is between two cell, to semplify the search, 
+ *     both the cell have to be saved in this list. If a cell
+ *     have more that one wall in different directions, the string
+ *     will contains the initials of the directions ("ws"
+ *     identify two wall on the west and the south directions):
+ *  5. Like for the walls, the coordinates for the doors and 
+ *     the windows that can be barricade, are included in this
+ *     array.
+ ****************************************************************/
+ const obstacles = [[1, 6], [3, 1], [3, 8], [4, 1], [4, 3], [4, 4], [4, 5], [5, 1], [5, 5]
               , [6, 1], [6, 4], [6, 5], [6, 8], [6, 9], [7, 1], [7, 5], [7, 8], [7, 9]
               , [0, 12], [0, 18], [0, 19], [1, 19], [5, 13], [5, 14], [6, 12], [6, 13]
               , [6, 14], [6, 16], [6, 17], [6, 18], [7, 12], [7, 13], [7, 18]
@@ -76,6 +125,9 @@ const barricades = [[5, 11, "s"]
                 , [17, 16, "n"]
                 , [17, 17, "n"]];
 
+/**************************************************************
+ * This function check if two arrays are equals
+ *************************************************************/
 function arrayEquals(a, b) {
     return Array.isArray(a) &&
         Array.isArray(b) &&
@@ -83,6 +135,26 @@ function arrayEquals(a, b) {
         a.every((val, index) => val === b[index]);
 }
 
+/*************************************************************
+ * This function setup the board.
+ * It fill a board of 24x20 cells and initialize with the 
+ * string ";[];[]". The format of the content of the cell will 
+ * be the follow:
+ *    <a>;<b>;<c>
+ * where:
+ *  <a> identify the content of the cell (empty, obstacle,
+ *      searchable or player)
+ *  <b> identify an array whith the directions where walls 
+ *      are present ("ws" identify two wall on the west and 
+ *      the south directions).
+ *  <c> Same for the walls, but with the barricable doors 
+ *      and windows. The additional element identify if the
+ *      barricades is active or not.
+ *      n0: the passage is open
+ *      n1: the passage is barricade
+ *      n0e1: the passage on the north side is open, the 
+ *            passage on the east side is barricade
+ ************************************************************/
 function BoardSetup(){
   let board =  Array(24).fill(null).map(() => Array(20).fill(cellStatus.empty + ";[];[]"));
 
@@ -90,12 +162,25 @@ function BoardSetup(){
   searchables.forEach(el => board[el[0]][el[1]] = cellStatus.searchable + ";[];[]");
 
   walls.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace(";[];", ";[" + el[2] + "];"));
-  barricades.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace("];[]", "];[" + el[2] + "0]"));
+  barricades.forEach(el => board[el[0]][el[1]] = board[el[0]][el[1]].replace("];[]", "];[" + el[2].replace(/./g, '$&0') + "]"));
 
   return board;
 }
 
-function SetupPlayer(playerNum){
+/*************************************************************
+ * This function setup the players.
+ * Players are splitted in two different kind: zombies and 
+ * humans.
+ * For each human, 4 zombies are placed in the game.
+ * Human players start from the bottom of the map, spaced 
+ * according to the number of participants; one player in 
+ * the center of the map, two 1/3 players, three 1/4 players 
+ * and so on, up to a maximum of 6 players.
+ * Zombies players start from the top of the map (placed as
+ * is, where an empty space is available)
+ ************************************************************/
+function SetupPlayer(playerNumTot){
+  let playerNum = playerNumTot -1;
   let players = {
     humans: [],
     zombies: []

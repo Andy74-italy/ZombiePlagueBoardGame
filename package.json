@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "parcel index.html --open"
+    "start": "cp -r ./src/search_cards/ ./dist/ && parcel index.html --open"
   },
   "browserslist": "defaults and supports async-functions",
   "keywords": [],
